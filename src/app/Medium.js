@@ -1,42 +1,19 @@
 import React from "react";
+import { connect } from "react-redux";
 import PageHeader from "./components/PageHeader";
 import PageContent from "./components/PageContent";
+import { Loader } from "./components/Loader";
 import axios from "axios";
 import MediumItem from "./medium/MediumItem";
+import { loadMedium } from "../store/Medium";
 class Medium extends React.Component {
-  state = {
-    posts: []
-  };
-  componentDidMount() {
-    this.fetchPosts().then(this.setPosts);
+  constructor(props) {
+    super(props);
+    console.log(this.props);
   }
-  fetchPosts = () =>
-    axios.get(
-      `https://cors.now.sh/https://us-central1-aaronklaser-1.cloudfunctions.net/medium?username=@aaron.klaser`
-    );
-  setPosts = ({ data }) => {
-    const { Post } = data.payload.references;
-    const posts = Object.values(Post).map(
-      ({ id, title, createdAt, virtuals, uniqueSlug }) =>
-        Object.assign(
-          {},
-          {
-            title,
-            createdAt,
-            subtitle: virtuals.subtitle,
-            image: virtuals.previewImage.imageId
-              ? `https://cdn-images-1.medium.com/max/800/${
-                  virtuals.previewImage.imageId
-                }`
-              : null,
-            url: `https://medium.com/@aaron.klaser/${uniqueSlug}`
-          }
-        )
-    );
-    this.setState({
-      posts
-    });
-  };
+  componentDidMount() {
+    this.props.loadMedium();
+  }
   render() {
     return (
       <div>
@@ -58,12 +35,28 @@ class Medium extends React.Component {
           </a>
         </PageHeader>
         <PageContent>
-          {this.state.posts.map(post => {
-            return <MediumItem {...post} />;
-          })}
+          {this.props.medium.loading ? (
+            <Loader className="has-text-primary" />
+          ) : (
+            <PageContent>
+              {this.props.medium.posts.map((post, i) => (
+                <MediumItem key={i} {...post} />
+              ))}
+            </PageContent>
+          )}
         </PageContent>
       </div>
     );
   }
 }
-export default Medium;
+
+function mapStateToProps(state, ownProps) {
+  return { medium: state.medium };
+}
+const mapDispatchToProps = dispatch => {
+  return {
+    loadMedium: () => dispatch(loadMedium())
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Medium);

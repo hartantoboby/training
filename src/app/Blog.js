@@ -1,25 +1,13 @@
 import React from "react";
+import { connect } from "react-redux";
 import * as contentful from "contentful";
 import BlogItem from "./blog/BlogItem";
 import PageHeader from "./components/PageHeader";
+import PageContent from "./components/PageContent";
+import { Loader } from "./components/Loader";
 class Blog extends React.Component {
-  state = {
-    posts: []
-  };
-  client = contentful.createClient({
-    space: "445ygst492nm",
-    accessToken:
-      "318c598b0fff8e10f5f6d8e22894cfc06ec45b6a38944098cc696994217575aa"
-  });
-  fetchPosts = () => this.client.getEntries();
-  setPosts = response => {
-    console.log(response.items);
-    this.setState({
-      posts: response.items
-    });
-  };
-  componentDidMount() {
-    this.fetchPosts().then(this.setPosts);
+  constructor(props) {
+    super(props);
   }
   render() {
     return (
@@ -31,12 +19,22 @@ class Blog extends React.Component {
           Angular, React, Functional Programming, and my{" "}
           <strong>project walkthroughs</strong>.
         </PageHeader>
-        <br />
-        {this.state.posts.map(({ fields }, i) => (
-          <BlogItem key={i} {...fields} />
-        ))}
+        {this.props.blog.loading ? (
+          <Loader className="has-text-primary" />
+        ) : (
+          <PageContent>
+            {this.props.blog.posts.map(({ fields }, i) => (
+              <BlogItem key={i} {...fields} />
+            ))}
+          </PageContent>
+        )}
       </div>
     );
   }
 }
-export default Blog;
+function mapStateToProps(state, ownProps) {
+  return {
+    blog: state.blog
+  };
+}
+export default connect(mapStateToProps)(Blog);
