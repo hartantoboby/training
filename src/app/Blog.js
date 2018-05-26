@@ -5,9 +5,13 @@ import BlogItem from "./blog/BlogItem";
 import PageHeader from "./components/PageHeader";
 import PageContent from "./components/PageContent";
 import { Loader } from "./components/Loader";
+import { actions } from "./../store/Blog";
 class Blog extends React.Component {
   constructor(props) {
     super(props);
+  }
+  componentDidMount() {
+    this.props.loadBlog();
   }
   render() {
     return (
@@ -37,4 +41,9 @@ function mapStateToProps(state, ownProps) {
     blog: state.blog
   };
 }
-export default connect(mapStateToProps)(Blog);
+const mapDispatchToProps = dispatch => {
+  return {
+    loadBlog: () => dispatch(actions.pending())
+  };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(Blog);
